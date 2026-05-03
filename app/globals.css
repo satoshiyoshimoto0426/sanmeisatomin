@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+  --color-ink: #1a2b4a;
+  --color-ink-soft: #2c3e5c;
+  --color-vermilion: #c14a3d;
+  --color-gold: #b8893d;
+  --color-paper: #f5f1ea;
+  --color-white: #ffffff;
+  --color-gray-100: #f5f3f0;
+  --color-gray-300: #d4cfc7;
+  --color-gray-500: #8b8478;
+  --color-gray-700: #4a453d;
+}
+
+@theme inline {
+  --color-background: var(--color-paper);
+  --color-foreground: var(--color-ink);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-vermilion: var(--color-vermilion);
+  --color-gold: var(--color-gold);
+  --color-paper: var(--color-paper);
+  --font-sans: "Inter", sans-serif;
+  --font-serif: "Yu Mincho", "游明朝", "Hiragino Mincho Pro", serif;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: "Yu Mincho", "游明朝", "Hiragino Mincho Pro", serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Yu Mincho", "游明朝", "Hiragino Mincho Pro", serif;
+}
+
+.font-inter {
+  font-family: "Inter", sans-serif;
+}
