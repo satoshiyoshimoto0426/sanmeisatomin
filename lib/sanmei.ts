@@ -8,6 +8,11 @@ import {
   ZOUKAN_PRIMARY,
 } from './constants';
 import { getSetsugetsuYear, getSetsugetsuBranch } from './solar-terms';
+import { calculatePreciseRyuun } from './daiun-precise';
+import { detectChuusatsu, isDaiunTenchuusatsu } from './chuusatsu';
+import { extractSpecialRelations } from './special-relations';
+import { detectRituon, detectNatOn } from './rituon-nat-on';
+import type { EnrichedMeishiki } from './enriched-meishiki';
 
 export interface BirthData {
   name?: string;
@@ -261,6 +266,109 @@ export function calculateMeishiki(birthData: BirthData): MeishikiResult {
     followStars,
     timeline,
   };
+}
+
+// ─────────────────────────────────────────────────────────
+//  Pillar → 干支文字列ヘルパー
+// ─────────────────────────────────────────────────────────
+export function pillarToString(p: Pillar): string {
+  return p.stem + p.branch;
+}
+
+// ─────────────────────────────────────────────────────────
+//  EnrichedMeishiki — 全要素統合の命式
+// ─────────────────────────────────────────────────────────
+/**
+ * 既存の calculateMeishiki に加え、立運/中殺/特殊干支関係/律音納音/年運天中殺
+ * を統合した EnrichedMeishiki を返す。
+ */
+export function calculateEnrichedMeishiki(
+  birthData: BirthData & { gender?: 'male' | 'female' },
+): EnrichedMeishiki {
+  const base = calculateMeishiki(birthData);
+  const gender: 'male' | 'female' = birthData.gender ?? 'male';
+
+  const yearStr = pillarToString(base.yearPillar);
+  const monthStr = pillarToString(base.monthPillar);
+  const dayStr = pillarToString(base.dayPillar);
+
+  const pillars = { yearPillar: yearStr, monthPillar: monthStr, dayPillar: dayStr };
+
+  // 立運計算は厳密な日時が必要（時刻指定なしなら正午）
+  const refDate = new Date(
+    birthData.year,
+    birthData.month - 1,
+    birthData.day,
+    birthData.hour ?? 12,
+    birthData.minute ?? 0,
+    0,
+  );
+
+  const daiun = calculatePreciseRyuun({
+    yearStem: base.yearPillar.stem,
+    monthPillar: monthStr,
+    dayStem: base.dayPillar.stem,
+    gender,
+    birthDate: refDate,
+  });
+
+  // 宿命中殺
+  const chuusatsu = detectChuusatsu(pillars);
+
+  // 大運に天中殺フラグを付加
+  daiun.pillars = daiun.pillars.map(p => ({
+    ...p,
+    isTenchuusatsu: isDaiunTenchuusatsu(p.branch, chuusatsu.tenchuusatsu),
+  }));
+
+  // 特殊干支関係
+  const specialRelations = extractSpecialRelations(pillars);
+
+  // 律音・納音
+  const rituonNatOn = {
+    rituon: detectRituon(pillars),
+    natOn: detectNatOn(pillars),
+  };
+
+  // 大運天中殺・年運天中殺（直近30年）
+  const unTenchuusatsu = {
+    daiunPeriods: daiun.pillars
+      .filter(p => p.isTenchuusatsu)
+      .map(p => ({ startAge: p.startAge, endAge: p.endAge, pillar: p.pillar })),
+    nenunYears: detectNenunTenchuusatsu(chuusatsu.tenchuusatsu),
+  };
+
+  return {
+    ...base,
+    gender,
+    daiun,
+    chuusatsu,
+    specialRelations,
+    rituonNatOn,
+    unTenchuusatsu,
+  };
+}
+
+/**
+ * 直近30年分の年運天中殺を検出
+ */
+function detectNenunTenchuusatsu(
+  tenchuusatsu: [string, string],
+): { year: number; pillar: string }[] {
+  const stems = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+  const branches = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+  const startYear = new Date().getFullYear();
+  const result: { year: number; pillar: string }[] = [];
+
+  for (let year = startYear; year < startYear + 30; year++) {
+    const stemIdx = ((year - 4) % 10 + 10) % 10;
+    const branchIdx = ((year - 4) % 12 + 12) % 12;
+    const branch = branches[branchIdx];
+    if (tenchuusatsu.includes(branch)) {
+      result.push({ year, pillar: stems[stemIdx] + branch });
+    }
+  }
+  return result;
 }
 
 function generateTimeline(followStars: { initial: string; middle: string; late: string }) {

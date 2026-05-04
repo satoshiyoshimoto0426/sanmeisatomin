@@ -165,7 +165,7 @@ const PRECISE_TABLE: Record<number, string[]> = {
 /**
  * 指定年の12節気を時系列で取得
  */
-function getSolarTermsForYear(year: number): SolarTerm[] {
+export function getSolarTermsForYear(year: number): SolarTerm[] {
   const precise = PRECISE_TABLE[year];
   return SEKKI_NAMES.map((name, i) => ({
     name,
