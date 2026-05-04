@@ -3,7 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 import Link from 'next/link';
-import { calculateMeishiki } from '@/lib/sanmei';
+import { calculateMeishiki, calculateEnrichedMeishiki } from '@/lib/sanmei';
 import { FOLLOW_STAR_ENERGY, FOLLOW_STARS_META } from '@/lib/constants';
 import { selectClassicQuote } from '@/lib/classics';
 import MeishikiCard from '@/components/MeishikiCard';
@@ -12,6 +12,10 @@ import EnergyTimeline from '@/components/EnergyTimeline';
 import InterpretationStream from '@/components/InterpretationStream';
 import ActionPlan from '@/components/ActionPlan';
 import PdfDownloadButton from '@/components/PdfDownloadButton';
+import DaiunFlow from '@/components/DaiunFlow';
+import ChuusatsuPanel from '@/components/ChuusatsuPanel';
+import SpecialRelationsPanel from '@/components/SpecialRelationsPanel';
+import RituonNatOnPanel from '@/components/RituonNatOnPanel';
 
 // 命式を localStorage に保存する
 function saveToHistory(result: ReturnType<typeof calculateMeishiki>) {
@@ -47,6 +51,13 @@ function ResultContent() {
   const name = searchParams.get('name') || undefined;
 
   const result = calculateMeishiki({ name, year, month, day });
+  // S/Aランク Part 1: 立運・宿命中殺・特殊干支関係・律音納音などの拡張データ
+  const enriched = calculateEnrichedMeishiki({ name, year, month, day });
+  const currentAge = new Date().getFullYear() - year;
+  const sheetParams = new URLSearchParams({
+    year: String(year), month: String(month), day: String(day),
+  });
+  if (name) sheetParams.set('name', name);
 
   // 履歴に保存
   useEffect(() => {
@@ -193,6 +204,63 @@ function ResultContent() {
 
         <div className="w-16 h-px mx-auto" style={{ backgroundColor: 'var(--color-gray-300)' }} />
 
+        {/* セクション3.5: 立運・大運の流れ */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-xs tracking-[0.3em] uppercase" style={{ color: 'var(--color-gray-500)' }}>
+              立運・大運の流れ
+            </h2>
+            <p className="text-xs mt-2" style={{ color: 'var(--color-gray-500)' }}>
+              10年ごとに巡る、人生の運の質
+            </p>
+          </div>
+          <DaiunFlow daiun={enriched.daiun} currentAge={currentAge} />
+        </section>
+
+        <div className="w-16 h-px mx-auto" style={{ backgroundColor: 'var(--color-gray-300)' }} />
+
+        {/* セクション3.6: 宿命中殺 */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-xs tracking-[0.3em] uppercase" style={{ color: 'var(--color-gray-500)' }}>
+              宿命中殺 — 独自の道を歩む傾向
+            </h2>
+            <p className="text-xs mt-2" style={{ color: 'var(--color-gray-500)' }}>
+              中殺は欠陥ではなく、深まりの場
+            </p>
+          </div>
+          <ChuusatsuPanel chuusatsu={enriched.chuusatsu} />
+        </section>
+
+        <div className="w-16 h-px mx-auto" style={{ backgroundColor: 'var(--color-gray-300)' }} />
+
+        {/* セクション3.7: 特殊干支関係 */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-xs tracking-[0.3em] uppercase" style={{ color: 'var(--color-gray-500)' }}>
+              命式の中の響き合い
+            </h2>
+            <p className="text-xs mt-2" style={{ color: 'var(--color-gray-500)' }}>
+              干合・支合・三合・冲・刑・害・破
+            </p>
+          </div>
+          <SpecialRelationsPanel relations={enriched.specialRelations} />
+        </section>
+
+        <div className="w-16 h-px mx-auto" style={{ backgroundColor: 'var(--color-gray-300)' }} />
+
+        {/* セクション3.8: 律音・納音 */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-xs tracking-[0.3em] uppercase" style={{ color: 'var(--color-gray-500)' }}>
+              律音・納音 — 重なる響き
+            </h2>
+          </div>
+          <RituonNatOnPanel data={enriched.rituonNatOn} />
+        </section>
+
+        <div className="w-16 h-px mx-auto" style={{ backgroundColor: 'var(--color-gray-300)' }} />
+
         {/* セクション4: Claude AI 解釈（ストリーミング） */}
         <section className="space-y-6">
           <div className="text-center">
@@ -261,6 +329,13 @@ function ResultContent() {
             }}
           >
             もう一度導く
+          </Link>
+          <Link
+            href={`/sheet?${sheetParams.toString()}`}
+            className="text-xs transition-opacity hover:opacity-60"
+            style={{ color: 'var(--color-gray-500)' }}
+          >
+            鑑定者向け総合算出シートを開く →
           </Link>
           <Link
             href="/history"

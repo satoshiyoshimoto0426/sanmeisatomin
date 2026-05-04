@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { PREFECTURES } from '@/lib/constants';
 
-export default function InputPage() {
+function InputForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next'); // 'sheet' で鑑定者シートへ遷移
   const [name, setName] = useState('');
   const [year, setYear] = useState('');
   const [month, setMonth] = useState('');
@@ -51,7 +54,8 @@ export default function InputPage() {
     if (!timeUnknown && minute) params.set('minute', minute);
     if (prefecture) params.set('prefecture', prefecture);
 
-    router.push(`/result?${params.toString()}`);
+    const target = next === 'sheet' ? '/sheet' : '/result';
+    router.push(`${target}?${params.toString()}`);
   };
 
   return (
@@ -266,11 +270,23 @@ export default function InputPage() {
                 borderRadius: '2px',
               }}
             >
-              命式を導く
+              {next === 'sheet' ? '鑑定者シートを開く' : '命式を導く'}
             </button>
           </div>
         </form>
       </div>
     </main>
+  );
+}
+
+export default function InputPage() {
+  return (
+    <Suspense fallback={
+      <main className="flex-1 flex items-center justify-center">
+        <p style={{ color: 'var(--color-gray-500)' }}>読み込み中…</p>
+      </main>
+    }>
+      <InputForm />
+    </Suspense>
   );
 }

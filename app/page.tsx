@@ -43,6 +43,14 @@ export default function Home() {
             </Link>
             <span style={{ color: 'var(--color-gray-300)' }}>·</span>
             <Link
+              href="/input?next=sheet"
+              className="tracking-wider transition-opacity hover:opacity-60"
+              style={{ color: 'var(--color-gray-500)' }}
+            >
+              鑑定者シート
+            </Link>
+            <span style={{ color: 'var(--color-gray-300)' }}>·</span>
+            <Link
               href="/history"
               className="tracking-wider transition-opacity hover:opacity-60"
               style={{ color: 'var(--color-gray-500)' }}
