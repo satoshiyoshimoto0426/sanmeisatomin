@@ -35,6 +35,14 @@ export default function Home() {
           <div className="w-12 h-px mx-auto" style={{ backgroundColor: 'var(--color-gray-300)' }} />
           <div className="flex items-center justify-center gap-6 text-xs">
             <Link
+              href="/compatibility"
+              className="tracking-wider transition-opacity hover:opacity-60"
+              style={{ color: 'var(--color-gray-500)' }}
+            >
+              相性鑑定
+            </Link>
+            <span style={{ color: 'var(--color-gray-300)' }}>·</span>
+            <Link
               href="/history"
               className="tracking-wider transition-opacity hover:opacity-60"
               style={{ color: 'var(--color-gray-500)' }}
