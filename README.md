@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sanmei Compass — 算命羅針盤
 
-## Getting Started
+算命学（高尾系）の命式を生年月日から自動算出し、Claude AI による解釈とともに可視化する Next.js アプリです。
 
-First, run the development server:
+## 機能
+
+- **生年月日から命式を自動算出**（節月暦対応 — 立春・節入り切替）
+- **十大主星 3×3 人体図** と **十二大従星タイムライン**
+- **Claude AI による倫理的鑑定文**（ストリーミング表示）
+- **古典引用・アクションプラン・PDF出力**
+- **履歴保存**（端末内 localStorage）
+
+## ローカル開発
 
 ```bash
+npm install
+cp .env.example .env.local
+# .env.local に ANTHROPIC_API_KEY を記入
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[http://localhost:3000](http://localhost:3000) を開く。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 環境変数
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| キー | 必須 | 用途 |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | ✅ | Claude API（AI解釈・アクションプラン） |
 
-## Learn More
+## デプロイ
 
-To learn more about Next.js, take a look at the following resources:
+Vercel での1-clickデプロイを推奨。
+環境変数 `ANTHROPIC_API_KEY` を Vercel ダッシュボードに登録してください。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ディレクトリ
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+sanmei-compass/
+├ app/
+│  ├ input|result|history|manual|disclaimer/  # 各画面
+│  └ api/interpret|action-plan/               # Claude API ストリーム
+├ components/  # MeishikiCard, BodyMap, EnergyTimeline, …
+└ lib/
+   ├ sanmei.ts       # 命式算出ロジック
+   ├ solar-terms.ts  # 節気テーブル
+   ├ classics.ts     # 古典引用データ
+   └ constants.ts    # 干支・蔵干テーブル
+```
 
-## Deploy on Vercel
+## ライセンス・免責
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+本アプリは「高尾系算命学」の体系に基づきます。鑑定結果はエンターテインメント・自己理解の参考としてご活用ください。詳細は `/disclaimer`。
